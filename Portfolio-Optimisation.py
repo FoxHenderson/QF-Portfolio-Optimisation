@@ -17,7 +17,7 @@ data = data["Adj Close"] #Adjusted data at close (yfianance requires capital C!!
 #data.plot(figsize=(10, 5)) #plots the historical adjusted close prices
 
 log_returns = np.log(data/ data.shift(1)) #data.shift shifts the rows by 1 so we can calulate the log returns
-log_returns[tickers].hist(figsize=[18, 12], bins=100)
+#log_returns[tickers].hist(figsize=[18, 12], bins=100)
 
 #plot log returns as histogram
 #plt.title("Histogram of Log Returns")
@@ -45,11 +45,12 @@ def Portfolio_sharpe(weights, log_returns, riskfree):
     return -(p_returns - riskfree) / p_volatility
 
 #generate data for 10k portfolios
-num_portfolios = 10_000 #70k portfolios takes like 10 years on my laptop
+num_portfolios = 100_000 #70k portfolios takes like 10 years on my laptop
 all_weights = np.zeros((num_portfolios, len(tickers)))
 returns = np.zeros(num_portfolios)
 volatilities = np.zeros(num_portfolios)
 sharpe_ratios = np.zeros(num_portfolios)
+#initialise variables for optimal portfolio
 maxSharpe = -1
 maxWeights = np.random.random(len(tickers))
 
@@ -78,8 +79,8 @@ plt.show()
 
 #display optimal portfolio, bar chart with weights of each ticker.
 plt.figure(figure=(10, 6))
-plt.bar(tickers, maxWeights * 100, color='Red', width=0.4)
+plt.bar(tickers, maxWeights * 100, color='Black', width=0.4)
 plt.xlabel("Stock ticker")
 plt.ylabel("Proportion of portfolio (%)")
-plt.title(f"Optimal portfolio with sharpe ratio {maxSharpe.round(3)}")
+plt.title(f"Optimal portfolio with sharpe ratio {maxSharpe.round(2)}")
 plt.show()
