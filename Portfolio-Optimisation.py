@@ -6,12 +6,18 @@ import seaborn as sns # statistical plots, like heat maps or violin charts
 # (lots of charts)
 import yfinance as yf # takes stock data from online (dont need to generate your own data, backtesting?)
 from scipy.optimize import minimize # just want one function that we use to minimise stuff later on
+from datetime import date #for dates and stuff
 
 #example portfolio with 6 assets, aims to determine what % of our portfolio
 #we should invest in each ticker, based on data from 01/01/2023 - 01/01/2024
 tickers = ['RR.L', 'NWG.L','HSBA.L', 'GSK.L', 'BARC.L', 'LLOY.L'] #.L is for london stock exchange
-riskfree=0.01 #risk free rate
-data = yf.download(tickers, start="2023-01-01", end="2024-01-01")
+riskfree = 0.0106
+dict_duration = {
+    #date of form YYYY, MM, DD
+    "start" : date(2023, 1, 1),
+    "end" : date(2024, 1, 1),
+}
+data = yf.download(tickers, start=str(dict_duration["start"]), end=str(dict_duration["end"]))
 data = data["Adj Close"] #Adjusted data at close (yfianance requires capital C!!)
 
 #data.plot(figsize=(10, 5)) #plots the historical adjusted close prices
@@ -35,17 +41,22 @@ def portfolio_performance(weights, log_returns): #weights, how much of each asse
     
     return portfolio_returns, portfolio_volatility
 
-#riskfree rate being the amount you would earn from interest if your money sat in the bank
-#default value for riskfree set as 1% (real rate can be calculated using the difference between
-#the interest rate and the yield of a gov bond with the same length, in this case 1 year)
-
 #the sharpe ratio is 
 def Portfolio_sharpe(weights, log_returns, riskfree):
     p_returns, p_volatility = portfolio_performance(weights, log_returns)
     return -(p_returns - riskfree) / p_volatility
 
+#==============================================================================================
+#Optimisation methodologies:
+#Method I - Monte-Carlo simulation
+def weights_MonteCarlo():
+    weights = np.random.random(len(tickers))
+    return (weights / np.sum(weights)) #normalise the weights so |w| =< 1
+    
+
+#==============================================================================================
 #generate data for 10k portfolios
-num_portfolios = 100_000 #70k portfolios takes like 10 years on my laptop
+num_portfolios = 10_000 #70k portfolios takes like 10 years on my laptop
 all_weights = np.zeros((num_portfolios, len(tickers)))
 returns = np.zeros(num_portfolios)
 volatilities = np.zeros(num_portfolios)
@@ -55,9 +66,8 @@ maxSharpe = -1
 maxWeights = np.random.random(len(tickers))
 
 for i in range(num_portfolios):
-    #monte-carlo simulation
-    weights = np.random.random(len(tickers)) # could write len(tickers) instead of .columns
-    weights /= np.sum(weights) #normalise the weights so |w| =< 1
+    #generate weightings for each ticker in portfolio
+    weights = weights_MonteCarlo()
     
     all_weights[i] = weights
     returns[i], volatilities[i] = portfolio_performance(weights, log_returns)
