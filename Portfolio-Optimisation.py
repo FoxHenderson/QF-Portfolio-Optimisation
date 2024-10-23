@@ -49,6 +49,7 @@ def Portfolio_sharpe(weights, log_returns, riskfree):
 #==============================================================================================
 #Optimisation methodologies:
 #Method I - Monte-Carlo simulation
+
 def weights_MonteCarlo():
     weights = np.random.random(len(tickers))
     return (weights / np.sum(weights)) #normalise the weights so |w| =< 1
@@ -62,7 +63,7 @@ returns = np.zeros(num_portfolios)
 volatilities = np.zeros(num_portfolios)
 sharpe_ratios = np.zeros(num_portfolios)
 #initialise variables for optimal portfolio
-maxSharpe = -1
+minSharpe = 999999999
 maxWeights = np.random.random(len(tickers))
 
 for i in range(num_portfolios):
@@ -74,8 +75,8 @@ for i in range(num_portfolios):
     sharpe_ratios[i] = -(Portfolio_sharpe(weights, log_returns, riskfree)) #negative because "some maths"
     
     #store the portfolio which delivered the highest sharpe value
-    if (maxSharpe < sharpe_ratios[i]):
-        maxSharpe = sharpe_ratios[i]
+    if (minSharpe > sharpe_ratios[i]):
+        minSharpe = sharpe_ratios[i]
         maxWeights = all_weights[i]
 
 #plot data as scatter graph using matplotlib
@@ -92,5 +93,5 @@ plt.figure(figure=(10, 6))
 plt.bar(tickers, maxWeights * 100, color='Black', width=0.4)
 plt.xlabel("Stock ticker")
 plt.ylabel("Proportion of portfolio (%)")
-plt.title(f"Optimal portfolio with sharpe ratio {maxSharpe.round(2)}")
+plt.title(f"Optimal portfolio with sharpe ratio {minSharpe.round(2)}")
 plt.show()
